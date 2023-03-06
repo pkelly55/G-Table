@@ -16,8 +16,12 @@ class LoginWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        # Create a new database sqlite3  GUI.db
+        # 
+        # table = 'CLIENTS'
+        # table for user login
+                
         
-
     def initUI(self):
         self.setWindowTitle('Login')
         self.setGeometry(700, 700, 300, 200)
@@ -145,7 +149,6 @@ class MainWindow(QWidget):
         self.hbox.addWidget(self.update_button)
         self.hbox.addWidget(self.delete_button)
 
-
         # Create the vertical layout for the red frame and buttons
         self.vbox = QVBoxLayout()
         self.vbox.addWidget(self.red_frame)
@@ -153,13 +156,15 @@ class MainWindow(QWidget):
 
         # Set the layout of the main window to the vertical layout
         self.setLayout(self.vbox)
+        
         # Window resize False
         self.setFixedSize(self.size())
+        
         # Set the window title and size
         self.setWindowTitle('Client Manager')
         self.setGeometry(700, 550, 700, 550)
 
-    # Text boxs for client information
+        # Text boxs for client information
         self.client_name = QLineEdit(self)
         self.client_name.move(20, 20)
         self.client_name.resize(280, 40)
@@ -216,6 +221,10 @@ class MainWindow(QWidget):
         self.load_button.move(500, 60)
         self.load_button.resize(100, 40)
 
+        # Client amount button top Right
+        self.client_amount_button = QPushButton('Client Amount', self)
+        self.client_amount_button.move(500, 100)
+        self.client_amount_button.resize(100, 40)
 
         # Create table to store client information
         self.table = QTableWidget(self)
@@ -224,10 +233,18 @@ class MainWindow(QWidget):
         # make table expandable
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
+        # Set the number of rows and columns
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(("Client Name", "Client Address", "Client Phone", "Client Email"))
+        self.table.setRowCount(0)
+        # Set the table to be editable
+        self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        # Set the table to be selectable
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        # Set the table to be sortable
+        self.table.setSortingEnabled(True)
 
+        # Connect the buttons to their respective functions
         self.create_button.clicked.connect(self.add_client_info)
         self.read_button.clicked.connect(self.read_client_info)
         self.update_button.clicked.connect(self.update_client_info)
@@ -237,32 +254,46 @@ class MainWindow(QWidget):
         self.search_button.clicked.connect(self.search_client_info)
         self.undo_button.clicked.connect(self.undo_last_action)
         self.sort_button.clicked.connect(self.sort_client_info)
+        self.client_amount_button.clicked.connect(self.show_num_clients)
         # Add a box to display the client information when searched for using read button
         self.client_info = QTextEdit(self)
         self.client_info.move(450, 180)
         self.client_info.resize(150, 200)
         self.client_info.setReadOnly(True)
-
         self.show()
+
     def add_client_info(self):
         self.table.insertRow(0)
         self.table.setItem(0, 0, QTableWidgetItem(self.client_name.text()))
         self.table.setItem(0, 1, QTableWidgetItem(self.client_address.text()))
         self.table.setItem(0, 2, QTableWidgetItem(self.client_phone.text()))
         self.table.setItem(0, 3, QTableWidgetItem(self.client_email.text()))
+        
+        # Clear the text boxes after adding client information
+        self.client_name.clear()
+        self.client_address.clear()
+        self.client_phone.clear()
+        self.client_email.clear()
         self.show()
+        
 # View Client Information in Right Box
     def read_client_info(self):
         # Client name is the primary key
         client_name = self.client_name.text()
-        # Search for client name in table
-        
+
         for i in range(self.table.rowCount()):
-            # If client name is found, display client information in client_info box
+            # If client first name is found, display client information in client_info box
             if self.table.item(i, 0).text() == client_name:
                 self.client_info.setText("Client Found")
                 time.sleep(1)
                 self.client_info.setText("Client Name: " + self.table.item(i, 0).text() + "\nClient Address: " + self.table.item(i, 1).text() + "\nClient Phone: " + self.table.item(i, 2).text() + "\nClient Email: " + self.table.item(i, 3).text())
+
+            # if full name not found check for partial name (first)
+            elif self.table.item(i, 0).text().startswith(client_name):
+                self.client_info.setText("Client Found")
+                time.sleep(1)
+                self.client_info.setText("Client Name: " + self.table.item(i, 0).text() + "\nClient Address: " + self.table.item(i, 1).text() + "\nClient Phone: " + self.table.item(i, 2).text() + "\nClient Email: " + self.table.item(i, 3).text())
+                
     def update_client_info(self):
         # Client name is the primary key
         client_name = self.client_name.text()
@@ -276,6 +307,7 @@ class MainWindow(QWidget):
                 self.table.setItem(i, 3, QTableWidgetItem(self.client_email.text()))
                 self.client_info.setText("Client Name: " + self.table.item(i, 0).text() + "\nClient Address: " + self.table.item(i, 1).text() + "\nClient Phone: " + self.table.item(i, 2).text() + "\nClient Email: " + self.table.item(i, 3).text())
         self.show() 
+    
     def delete_client_info(self):
         # Client name is the primary key
         client_name = self.client_name.text()
@@ -316,15 +348,14 @@ class MainWindow(QWidget):
                 order = Qt.AscendingOrder
         # sort the table
         self.table.sortByColumn(column, order)
+    
     # Undo the last action
     def undo_last_action(self):
         # Check if there is an action to undo
         if not self.undo_stack:
             return
-        
         # Pop the last action from the undo stack
-        last_action = self.undo_stack.pop()
-        
+        last_action = self.undo_stack.pop()    
         # Undo the action based on its type
         if last_action[0] == 'add_client':
             # Delete the row from the table
@@ -337,9 +368,6 @@ class MainWindow(QWidget):
             self.table.setItem(row_index, 0, client_name)
     
     # Save the client information for next time the program is run
-    
-   
-
     def save_data_to_file(self):
         def save_data(filename, data):
             with open(filename, 'w') as file:
@@ -360,12 +388,12 @@ class MainWindow(QWidget):
         if filename:
             save_data(filename, data)
 
-    
-    
+    def show_num_clients(self):
+        # Show the number of clients the client info box 
+        self.client_info.setText("Number of Clients: " + str(self.table.rowCount()))
+
 
     # Load the client information from the file
-   
-    # Load data from table.csv to go back into table.
     # Pick file to load
     def load_file(self):
         # Load data from table.csv to go back into table.
@@ -410,6 +438,11 @@ class MainWindow(QWidget):
     # When the window is opened, read the client information from the file
     def read_file(self):
         # Open the file to read from
+        # if file does not exist, create it
+        if not os.path.exists('client_info.txt'):
+            with open('client_info.txt', 'w') as file:
+                file.write('0 4')
+
         with open('client_info.txt', 'r') as file:
             # Read the number of rows and columns from the file
             rows, columns = file.readline().split()
