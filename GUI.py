@@ -5,7 +5,7 @@ import sys
 import os 
 import datetime
 import time
-
+import sqlite3
 from PyQt5 import *
 
 from PyQt5.QtWidgets import *
@@ -41,16 +41,81 @@ class LoginWindow(QWidget):
         self.login_button.move(120, 120)
         self.login_button.clicked.connect(self.login)
 
+        # Create the register button
+        self.register_button = QPushButton('Register', self)
+        self.register_button.move(200, 120)
+        self.register_button.clicked.connect(self.register)
+
+
         self.show()
 
+    
+    def register(self):
+        # if user clicks register button, open register window
+        self.register = RegisterWindow()
+        self.register.show()
+        self.close()
+    
     def login(self):
-        # Check if the username and password are correct
-        # Here, you would need to write your own authentication code
-        # This is just an example
+    # Check if the username and password are correct
+    # Here, you would need to write your own authentication code
+    # This is just an example
         if self.username.text() == 'admin' and self.password.text() == 'password':
-            self.accept()
+            self.main = MainWindow()
+            self.main.show()
+            self.close()
         else:
             QMessageBox.warning(self, 'Error', 'Invalid username or password')
+
+
+
+class RegisterWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle('Register')
+        self.setGeometry(700, 700, 300, 200)
+
+        # Create the labels and text boxes for username and password
+        self.username_label = QLabel('Username:', self)
+        self.username_label.move(50, 50)
+        self.username = QLineEdit(self)
+        self.username.move(120, 50)
+        self.username.resize(150, 20)
+
+        self.password_label = QLabel('Password:', self)
+        self.password_label.move(50, 80)
+        self.password = QLineEdit(self)
+        self.password.move(120, 80)
+        self.password.resize(150, 20)
+        self.password.setEchoMode(QLineEdit.Password)
+
+        # Create the register button
+        self.register_button = QPushButton('Register', self)
+        self.register_button.move(120, 120)
+        self.register_button.clicked.connect(self.register)
+
+        self.show()
+
+    def register(self):
+        # Check if the username and password are correct
+        # Here, you would need to write your own authentication code
+        # once hit add to database 
+
+        # Create a new database sqlite3  test.db
+        conn = sqlite3.connect('test.db')
+        # Insert values into the table
+        conn.execute('''INSERT INTO CLIENTS (NAME,ADDRESS,PHONE) VALUES (?,?,?)''', (self.username.text(), self.password.text(), self.password.text()))
+        # Save (commit) the changes
+        conn.commit()
+        
+        # Close the connection
+        conn.close()
+        # Open the main window
+        self.main = MainWindow()
+        
 
 
 class MainWindow(QWidget):
@@ -361,7 +426,9 @@ class MainWindow(QWidget):
         self.read_file()
         event.accept()
 
+# run the login window before the main window    
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = MainWindow()
+    login = LoginWindow()
+    login.show()
     sys.exit(app.exec_())
