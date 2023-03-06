@@ -88,9 +88,10 @@ class MainWindow(QWidget):
 
         # Set the layout of the main window to the vertical layout
         self.setLayout(self.vbox)
-
+        # Window resize False
+        self.setFixedSize(self.size())
         # Set the window title and size
-        self.setWindowTitle('Client GUI')
+        self.setWindowTitle('Client Manager')
         self.setGeometry(700, 550, 700, 550)
 
     # Text boxs for client information
@@ -133,12 +134,12 @@ class MainWindow(QWidget):
 
         # Undo button
         self.undo_button = QPushButton('Undo', self)
-        self.undo_button.move(300, 100)
+        self.undo_button.move(300, 140)
         self.undo_button.resize(150, 40)
 
         # Sort button
         self.sort_button = QPushButton('Sort', self)
-        self.sort_button.move(300, 140)
+        self.sort_button.move(300, 100)
         self.sort_button.resize(150, 40)
 
         # Save button top Right
@@ -173,7 +174,7 @@ class MainWindow(QWidget):
         self.sort_button.clicked.connect(self.sort_client_info)
         # Add a box to display the client information when searched for using read button
         self.client_info = QTextEdit(self)
-        self.client_info.move(500, 175)
+        self.client_info.move(450, 180)
         self.client_info.resize(150, 200)
         self.client_info.setReadOnly(True)
 
@@ -330,9 +331,6 @@ class MainWindow(QWidget):
                         self.table.setItem(i, j, QTableWidgetItem(rows[i][j]))
 
         self.show()
-
-
-
 
     # When exit button is clicked, save the client information to a file
     def exit_button_clicked(self):
